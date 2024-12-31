@@ -1,16 +1,27 @@
-from pysnark.runtime import snark, IfElse, PubVal
-
-# Define eligible voters as public values to be used in conditional checks
-eligible_voters = [PubVal(123456), PubVal(234567), PubVal(345678)]  # Example eligible IDs
+from pysnark.runtime import snark, PubVal
+import csv
 
 @snark
-def is_eligible(voter_id):
-    # Check if voter_id matches any value in eligible_voters
-    return IfElse(voter_id == eligible_voters[0], 1,
-                  IfElse(voter_id == eligible_voters[1], 1,
-                         IfElse(voter_id == eligible_voters[2], 1, 0)))
+def verify_voter_eligibility(voter_id, district_id, is_eligible):
+    # Convert inputs to public values
+    pub_voter_id = PubVal(voter_id)
+    pub_district_id = PubVal(district_id)
+    pub_is_eligible = PubVal(is_eligible)
+    
+    # Your verification logic here
+    # This is a simplified example
+    return pub_is_eligible
 
-# Example usage
-voter_id = PubVal(123)  # Use a public value for the voter_id to check eligibility
-print("Voter eligibility:", is_eligible(voter_id).val())
+def main():
+    with open('mock_data.csv', 'r') as file:
+        csv_reader = csv.DictReader(file)
+        for row in csv_reader:
+            voter_id = int(row['voter_id'])
+            district_id = int(row['district_id'])
+            is_eligible = row['is_eligible'].lower() == 'true'
+            
+            result = verify_voter_eligibility(voter_id, district_id, is_eligible)
+            print(f"Voter {voter_id}: {'Eligible' if result else 'Not Eligible'}")
 
+if __name__ == "__main__":
+    main()
